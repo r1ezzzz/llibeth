@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memories with Lola Libeth</title>
+<style>
+:root{
+  --cream-1:#fdf6ec; --cream-2:#f7e7cf; --cream-3:#f0dcc0;
+  --blush:#f6c9d3; --blush-deep:#e58aa2;
+  --rose:#c2436a; --rose-dark:#9c2f52;
+  --gold-2:#d9b263; --gold-3:#a67c2e;
+  --ink:#6b563c;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;}
+body{
+  min-height:100vh;padding:0 0 60px;
+  font-family:"Baskerville Old Face","Bodoni MT",Didot,Georgia,serif;
+  color:var(--ink);
+  background:
+    radial-gradient(110% 60% at 50% 0%, #fffaf1 0%, transparent 58%),
+    radial-gradient(90% 55% at 10% 90%, #fbe6d6 0%, transparent 62%),
+    radial-gradient(90% 55% at 92% 30%, #fdeede 0%, transparent 58%),
+    linear-gradient(160deg,var(--cream-1) 0%,var(--cream-2) 48%,var(--cream-3) 100%);
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.4;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.2'/%3E%3C/svg%3E");
+}
+
+/* ---------- header ---------- */
+.top{position:relative;z-index:2;text-align:center;padding:26px 18px 6px;}
+.back{
+  position:absolute;left:18px;top:24px;
+  font-family:Georgia,serif;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  color:#a3865a;text-decoration:none;
+  border:1px solid rgba(166,124,46,.4);border-radius:30px;padding:8px 15px;
+  background:rgba(255,251,241,.7);transition:color .2s,border-color .2s,transform .16s;
+}
+.back:hover{color:var(--rose);border-color:var(--gold-2);}
+.back:active{transform:scale(.96);}
+h1{
+  margin:6px 0 2px;font-weight:400;
+  font-family:"Segoe Script","Brush Script MT","Snell Roundhand",cursive;
+  font-size:clamp(30px,7vw,50px);
+  background:linear-gradient(180deg,#fff6d8,var(--gold-2) 46%,var(--gold-3) 74%,#f0dda8);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 1px 0 rgba(255,255,255,.85)) drop-shadow(0 4px 10px rgba(140,100,40,.28));
+}
+.subt{
+  margin:0;font-family:Georgia,serif;font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+  color:#b09263;padding-left:.28em;
+}
+
+/* ---------- stage / slideshow ---------- */
+.wrap{position:relative;z-index:2;width:min(860px,94vw);margin:18px auto 0;}
+.stage{
+  position:relative;width:100%;aspect-ratio:16/10;
+  border-radius:16px;overflow:hidden;
+  background:radial-gradient(circle at 50% 38%,#fffdf8,#efe2cd);
+  border:1px solid rgba(166,124,46,.4);
+  box-shadow:0 24px 60px -24px rgba(120,80,30,.5),inset 0 0 0 1px rgba(255,255,255,.4);
+  display:grid;place-items:center;
+}
+.hero{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+  opacity:0;transition:opacity .6s ease;
+}
+.hero.show{opacity:1;}
+.empty{
+  font-family:Georgia,serif;font-style:italic;font-size:14px;color:#b09263;
+  text-align:center;padding:0 24px;
+}
+.nav{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:46px;height:46px;border-radius:50%;cursor:pointer;
+  border:1px solid rgba(166,124,46,.4);
+  background:rgba(255,251,241,.82);color:var(--gold-3);
+  font:400 26px/1 Georgia,serif;display:grid;place-items:center;
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  transition:transform .16s,background .2s,color .2s;
+}
+.nav:hover{background:#fff;color:var(--rose);}
+.nav:active{transform:translateY(-50%) scale(.9);}
+.nav.prev{left:12px;padding-right:3px;}
+.nav.next{right:12px;padding-left:3px;}
+.counter{
+  position:absolute;top:12px;right:14px;
+  font:400 12px/1 Georgia,serif;letter-spacing:.06em;color:#7a5f34;
+  background:rgba(255,251,241,.82);border:1px solid rgba(166,124,46,.3);
+  padding:5px 10px;border-radius:20px;
+}
+.cap{min-height:26px;margin:14px 0 0;text-align:center;}
+.cap .who{
+  display:block;font-family:"Segoe Script","Brush Script MT",cursive;
+  font-size:22px;color:var(--rose);
+}
+.cap .txt{
+  display:block;font-family:Georgia,serif;font-style:italic;font-size:14px;
+  color:#5f4a30;margin-top:2px;
+}
+
+/* ---------- thumbnail grid ---------- */
+.grid{
+  width:min(860px,94vw);margin:26px auto 0;position:relative;z-index:2;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;
+}
+.thumb{
+  position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;
+  border:2px solid transparent;background:#f3e6d2;
+  box-shadow:0 4px 12px -6px rgba(120,86,40,.4);
+  transition:transform .16s,border-color .2s,box-shadow .2s;
+}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.thumb:hover{transform:translateY(-2px);box-shadow:0 10px 20px -8px rgba(120,86,40,.5);}
+.thumb.active{border-color:var(--gold-2);}
+
+/* ---------- actions ---------- */
+.actions{
+  width:min(860px,94vw);margin:30px auto 0;position:relative;z-index:2;
+  display:flex;gap:12px;justify-content:center;flex-wrap:wrap;
+}
+.btn{
+  padding:13px 24px;border-radius:40px;cursor:pointer;text-decoration:none;
+  font-family:Georgia,serif;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  border:1px solid rgba(166,124,46,.5);
+  background:linear-gradient(180deg,#fffdf6,#f2e2c6);color:#8a6a35;
+  transition:transform .16s,box-shadow .2s,color .2s,background .3s;
+}
+.btn:hover{box-shadow:0 6px 16px -7px rgba(120,86,40,.5);color:var(--rose);}
+.btn:active{transform:scale(.97);}
+.btn.primary{
+  background:linear-gradient(180deg,#e8859f,var(--rose));border-color:rgba(156,47,82,.5);color:#fff9fb;
+}
+.btn.primary:hover{color:#fff;}
+
+.footer{
+  text-align:center;margin:34px auto 0;position:relative;z-index:2;
+  font-family:"Segoe Script","Brush Script MT",cursive;
+  font-size:clamp(16px,3.6vw,20px);color:var(--blush-deep);
+}
+
+@media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+</head>
+<body>
+
+  <header class="top">
+    <a class="back" href="card.html">&#8592; Back</a>
+    <h1>Memories with Lola</h1>
+    <p class="subt" id="count">&nbsp;</p>
+  </header>
+
+  <main class="wrap">
+    <div class="stage">
+      <img id="hero" class="hero" alt="A memory with Lola">
+      <div id="empty" class="empty">Loading memories&hellip;</div>
+      <button class="nav prev" id="prev" aria-label="Previous photo">&#8249;</button>
+      <button class="nav next" id="next" aria-label="Next photo">&#8250;</button>
+      <span class="counter" id="counter"></span>
+    </div>
+    <div class="cap" id="cap"></div>
+  </main>
+
+  <section class="grid" id="grid"></section>
+
+  <div class="actions">
+    <a class="btn" href="card.html">&#8592; Back to the card</a>
+    <a class="btn primary" href="card.html#add">&#65291; Add a photo</a>
+  </div>
+
+  <p class="footer">Made with love for Lola Libeth</p>
+
+<script>
+/* --- shared Supabase settings (keep in sync with card.html) --- */
+const CONFIG = {
+  url: 'https://gxzglvswpkgiuszcjhxb.supabase.co',
+  key: 'sb_publishable_VCgQ9ZcLMAhDRvbzof-jDw_Ok5WHSsF'
+};
+const BUCKET = 'lola-photos';
+const REMOTE = /^https:\/\/.+\.supabase\.co/.test(CONFIG.url) && CONFIG.key.length > 20;
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function loadPhotos(){
+  if (!REMOTE) return [];
+  const r = await fetch(CONFIG.url + '/rest/v1/photos?select=path,name,caption&order=created_at.desc',
+    { headers:{ apikey:CONFIG.key, Authorization:'Bearer '+CONFIG.key } });
+  const rows = await r.json();
+  return Array.isArray(rows)
+    ? rows.map(p => ({ src: CONFIG.url + '/storage/v1/object/public/' + BUCKET + '/' + p.path,
+                       name: p.name, caption: p.caption }))
+    : [];
+}
+
+const hero    = document.getElementById('hero');
+const empty   = document.getElementById('empty');
+const cap     = document.getElementById('cap');
+const counter = document.getElementById('counter');
+const count   = document.getElementById('count');
+const grid    = document.getElementById('grid');
+
+let photos = [];
+let idx = 0, timer = null;
+
+function show(){
+  if (!photos.length){
+    empty.style.display = ''; hero.classList.remove('show'); hero.removeAttribute('src');
+    cap.textContent = ''; counter.textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+  idx = ((idx % photos.length) + photos.length) % photos.length;
+  const p = photos[idx];
+  hero.classList.remove('show');
+  const pre = new Image();
+  pre.onload = () => { hero.src = p.src; hero.classList.add('show'); };
+  pre.src = p.src;
+  cap.innerHTML = '<span class="who">' + esc(p.name || 'A loved one') + '</span>' +
+                  (p.caption ? '<span class="txt">' + esc(p.caption) + '</span>' : '');
+  counter.textContent = (idx + 1) + ' / ' + photos.length;
+  [...grid.children].forEach((t, i) => t.classList.toggle('active', i === idx));
+}
+function step(d){ idx += d; show(); restart(); }
+function restart(){
+  clearInterval(timer);
+  if (photos.length > 1) timer = setInterval(() => { idx++; show(); }, 5000);
+}
+
+function buildGrid(){
+  grid.innerHTML = photos.map((p, i) =>
+    '<div class="thumb" data-i="' + i + '"><img loading="lazy" src="' + p.src + '" alt=""></div>'
+  ).join('');
+  [...grid.children].forEach(t => {
+    t.addEventListener('click', () => { idx = +t.dataset.i; show(); restart(); });
+  });
+}
+
+document.getElementById('prev').addEventListener('click', () => step(-1));
+document.getElementById('next').addEventListener('click', () => step(1));
+addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') step(-1);
+  else if (e.key === 'ArrowRight') step(1);
+});
+
+(async () => {
+  try { photos = await loadPhotos(); } catch(e){ photos = []; }
+  count.textContent = photos.length
+    ? photos.length + (photos.length === 1 ? ' memory' : ' memories')
+    : '';
+  empty.textContent = 'No photos yet — be the first to add one.';
+  buildGrid();
+  idx = 0; show(); restart();
+})();
+</script>
+</body>
+</html>

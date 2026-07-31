@@ -129,7 +129,9 @@ That opens the envelope (`index.html`), which then leads into the card.
 ---
 
 ## Notes
-- `index.html` = the envelope intro. `card.html` = the main card. `aaaaa.jpg` = the photo.
+- `index.html` = the envelope intro. `card.html` = the main card.
+  `memories.html` = the photo slideshow page (linked from the card's bottom button).
+  `aaaaa.jpg` = Lola's framed photo.
 - Wishes/hearts are open to anyone with the link — fine for a family card. If it
   ever gets spammed, you can delete rows in Supabase → Table Editor.
 - To change the photo later, replace `aaaaa.jpg` (or click the frame in-page to

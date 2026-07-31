@@ -524,6 +524,34 @@ body{
   text-align:center;font-family:Georgia,serif;font-style:italic;font-size:12.5px;
   color:var(--rose);margin:10px 0 0;min-height:16px;
 }
+.p-preview{
+  display:none;width:100%;max-height:230px;object-fit:contain;
+  margin:2px 0 4px;border-radius:9px;
+  background:#fff;border:1px solid rgba(166,124,46,.3);
+}
+.p-preview.show{display:block;animation:rise .35s both;}
+.saved#pSavedLink a{color:var(--gold-3);}
+.saved#pSavedLink a:hover{color:var(--rose);}
+
+/* bottom "memories" button on the card */
+.memories-btn{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:max-content;max-width:82%;margin:32px auto 4px;
+  padding:13px 26px;border-radius:40px;cursor:pointer;text-decoration:none;
+  font-family:Georgia,serif;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:#8a5a2f;
+  background:linear-gradient(180deg,#fff7e6,#f1dcb4);
+  border:1px solid rgba(166,124,46,.55);
+  box-shadow:0 6px 18px -8px rgba(120,86,40,.5),inset 0 1px 0 rgba(255,255,255,.85);
+  transition:transform .18s,box-shadow .25s,background .3s,color .25s;
+  animation:rise 1.2s .8s cubic-bezier(.2,.8,.25,1) both;
+}
+.memories-btn svg{width:17px;height:17px;}
+.memories-btn:hover{
+  transform:translateY(-2px);color:var(--rose);
+  box-shadow:0 12px 26px -10px rgba(120,86,40,.55),0 0 0 4px rgba(217,178,99,.16),inset 0 1px 0 rgba(255,255,255,.85);
+}
+.memories-btn:active{transform:translateY(0) scale(.98);}
 
 @media (prefers-reduced-motion:reduce){*{animation:none !important;}}
 </style>
@@ -577,6 +605,16 @@ body{
     <svg class="ornament flip" viewBox="0 0 400 60" aria-hidden="true"><use href="#flourish"/></svg>
 
     <div class="signoff">With all our love &mdash; your family</div>
+
+    <a class="memories-btn" href="memories.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="6" width="14" height="12" rx="2"/>
+        <path d="M7 6V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-1"/>
+        <circle cx="7.5" cy="10" r="1.1"/>
+        <path d="M3.5 15l3-2.6 3 2.2"/>
+      </svg>
+      View all our memories
+    </a>
   </div>
 </div>
 
@@ -610,13 +648,13 @@ body{
 
     <span class="link"></span>
 
-    <button class="med" id="btnPhotos" aria-label="Photos with Lola">
+    <button class="med" id="btnPhotos" aria-label="Add a photo with Lola">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="4.5" width="18" height="15" rx="2.5"/>
         <circle cx="8.5" cy="10" r="1.7"/>
         <path d="M4 17l4.5-4.5 3.5 3 3-3L21 16"/>
       </svg>
-      <em>Photos</em>
+      <em>Add a photo</em>
     </button>
 
     <span class="tip"></span>
@@ -695,38 +733,27 @@ body{
 <!-- ============================================================
      PHOTOS — slideshow + upload
      ============================================================ -->
-<div class="overlay" id="photoOverlay" role="dialog" aria-modal="true" aria-label="Photos with Lola">
-  <div class="wish photos">
-    <h2>Photos with Lola</h2>
-    <p class="sub">Moments shared by everyone</p>
+<div class="overlay" id="photoOverlay" role="dialog" aria-modal="true" aria-label="Add a photo with Lola">
+  <div class="wish">
+    <h2>Add a photo</h2>
+    <p class="sub">Share a moment with Lola</p>
 
-    <div class="slide-stage">
-      <img id="slideImg" class="photo-img" alt="Photo with Lola">
-      <div id="slideEmpty" class="slide-empty">No photos yet &mdash; be the first to add one.</div>
-      <button class="slide-nav prev" id="slidePrev" aria-label="Previous photo">&#8249;</button>
-      <button class="slide-nav next" id="slideNext" aria-label="Next photo">&#8250;</button>
-      <span class="slide-counter" id="slideCounter"></span>
-    </div>
-    <div class="slide-cap" id="slideCap"></div>
+    <input id="pName" type="text" maxlength="40" placeholder="Your name">
+    <input id="pCaption" type="text" maxlength="120" placeholder="A caption (optional)">
+
+    <label class="file-drop" for="pFile">
+      <span>Choose a photo&hellip;</span><span id="pFileName" class="fname">No file chosen</span>
+    </label>
+    <input id="pFile" type="file" accept="image/*" hidden>
+    <img id="pPreview" class="p-preview" alt="">
 
     <div class="row">
       <button class="btn" id="pClose">Close</button>
-      <button class="btn primary" id="btnAddPhoto">&#65291; Add a photo</button>
+      <button class="btn primary" id="pUpload">Upload</button>
     </div>
 
-    <div class="add-photo" id="addPhoto">
-      <input id="pName" type="text" maxlength="40" placeholder="Your name">
-      <input id="pCaption" type="text" maxlength="120" placeholder="A caption (optional)">
-      <label class="file-drop" for="pFile">
-        <span>Choose a photo&hellip;</span><span id="pFileName" class="fname">No file chosen</span>
-      </label>
-      <input id="pFile" type="file" accept="image/*" hidden>
-      <div class="row">
-        <button class="btn" id="pCancel">Cancel</button>
-        <button class="btn primary" id="pUpload">Upload</button>
-      </div>
-      <p class="upload-status" id="pStatus"></p>
-    </div>
+    <p class="upload-status" id="pStatus"></p>
+    <p class="saved" id="pSavedLink">Added with love&nbsp;&#10047;&nbsp; <a class="link-btn" href="memories.html">see all the memories &#8594;</a></p>
   </div>
 </div>
 
@@ -1178,85 +1205,36 @@ document.getElementById('wViewAll').addEventListener('click', () => { openWish(f
 
 addEventListener('keydown', e => { if (e.key === 'Escape'){ openWish(false); openGallery(false); } });
 
-/* ---------- photos: slideshow + upload ---------- */
-const photoOv    = document.getElementById('photoOverlay');
-const slideImg   = document.getElementById('slideImg');
-const slideCap   = document.getElementById('slideCap');
-const slideCtr   = document.getElementById('slideCounter');
-const slideEmpty = document.getElementById('slideEmpty');
-const addPanel   = document.getElementById('addPhoto');
-const pName      = document.getElementById('pName');
-const pCaption   = document.getElementById('pCaption');
-const pFile      = document.getElementById('pFile');
-const pFileName  = document.getElementById('pFileName');
-const pStatus    = document.getElementById('pStatus');
-const pUpload    = document.getElementById('pUpload');
+/* ---------- add a photo (upload only; viewing lives on memories.html) ---------- */
+const photoOv   = document.getElementById('photoOverlay');
+const pName     = document.getElementById('pName');
+const pCaption  = document.getElementById('pCaption');
+const pFile     = document.getElementById('pFile');
+const pFileName = document.getElementById('pFileName');
+const pPreview  = document.getElementById('pPreview');
+const pStatus   = document.getElementById('pStatus');
+const pUpload   = document.getElementById('pUpload');
+const pSavedLink= document.getElementById('pSavedLink');
+let photoOpen = false;
 
-let photos = [];
-let slideIdx = 0, slideTimer = null, photoOpen = false;
-
-function showSlide(){
-  if (!photos.length){
-    slideEmpty.style.display = '';
-    slideImg.classList.remove('show');
-    slideImg.removeAttribute('src');
-    slideCap.textContent = '';
-    slideCtr.textContent = '';
-    return;
-  }
-  slideEmpty.style.display = 'none';
-  slideIdx = ((slideIdx % photos.length) + photos.length) % photos.length;
-  const p = photos[slideIdx];
-  slideImg.classList.remove('show');
-  const pre = new Image();
-  pre.onload = () => { slideImg.src = p.src; slideImg.classList.add('show'); };
-  pre.src = p.src;
-  slideCap.innerHTML = '<span class="who">' + esc(p.name || 'A loved one') + '</span>' +
-                       (p.caption ? '<span class="cap">' + esc(p.caption) + '</span>' : '');
-  slideCtr.textContent = (slideIdx + 1) + ' / ' + photos.length;
-}
-function step(d){ slideIdx += d; showSlide(); restartAuto(); }
-function restartAuto(){
-  clearInterval(slideTimer);
-  if (photoOpen && photos.length > 1)
-    slideTimer = setInterval(() => { slideIdx++; showSlide(); }, 4800);
-}
-
-async function openPhotos(open){
+function openPhotos(open){
   photoOv.classList.toggle('open', open);
   photoOpen = open;
   if (open){
-    addPanel.classList.remove('show');
-    slideEmpty.textContent = 'Loading photos…';
-    slideEmpty.style.display = '';
-    if (REMOTE){ try { photos = await sb.photos(); } catch(e){ photos = []; } }
-    slideEmpty.textContent = 'No photos yet — be the first to add one.';
-    slideIdx = 0; showSlide(); restartAuto();
-  } else {
-    clearInterval(slideTimer);
+    pSavedLink.classList.remove('show');
+    setTimeout(() => pName.focus(), 320);
   }
 }
-
 document.getElementById('btnPhotos').addEventListener('click', () => openPhotos(true));
-document.getElementById('slidePrev').addEventListener('click', () => step(-1));
-document.getElementById('slideNext').addEventListener('click', () => step(1));
 document.getElementById('pClose').addEventListener('click', () => openPhotos(false));
 photoOv.addEventListener('click', e => { if (e.target === photoOv) openPhotos(false); });
-addEventListener('keydown', e => {
-  if (!photoOpen) return;
-  if (e.key === 'Escape') openPhotos(false);
-  else if (e.key === 'ArrowLeft')  step(-1);
-  else if (e.key === 'ArrowRight') step(1);
-});
+addEventListener('keydown', e => { if (photoOpen && e.key === 'Escape') openPhotos(false); });
 
-/* add-photo panel */
-document.getElementById('btnAddPhoto').addEventListener('click', () => {
-  addPanel.classList.toggle('show');
-  if (addPanel.classList.contains('show')) pName.focus();
-});
-document.getElementById('pCancel').addEventListener('click', () => addPanel.classList.remove('show'));
 pFile.addEventListener('change', () => {
-  pFileName.textContent = pFile.files[0] ? pFile.files[0].name : 'No file chosen';
+  const f = pFile.files[0];
+  pFileName.textContent = f ? f.name : 'No file chosen';
+  if (f){ pPreview.src = URL.createObjectURL(f); pPreview.classList.add('show'); }
+  else  { pPreview.classList.remove('show'); }
 });
 
 /* shrink big photos in the browser before upload — faster + saves storage */
@@ -1288,18 +1266,20 @@ pUpload.addEventListener('click', async () => {
     const blob = await resizeImage(file, 1600, 0.85);
     pStatus.textContent = 'Uploading…';
     await sb.uploadPhoto(blob, pName.value.trim() || 'A loved one', pCaption.value.trim());
-    pStatus.textContent = 'Added! Thank you ✿';
+    pStatus.textContent = '';
+    pSavedLink.classList.add('show');
     pName.value = ''; pCaption.value = ''; pFile.value = '';
     pFileName.textContent = 'No file chosen';
-    photos = await sb.photos();
-    slideIdx = 0; showSlide(); restartAuto();
-    setTimeout(() => { addPanel.classList.remove('show'); pStatus.textContent = ''; }, 1500);
+    pPreview.classList.remove('show'); pPreview.removeAttribute('src');
   } catch(err){
     pStatus.textContent = 'Upload failed — please try again.';
   } finally {
     pUpload.disabled = false;
   }
 });
+
+/* deep-link: memories.html "add a photo" returns here and opens the dialog */
+if (/^#(add|photos)$/.test(location.hash)) openPhotos(true);
 
 /* ---------- initial shared load + gentle live refresh ---------- */
 if (REMOTE){
