@@ -67,11 +67,11 @@ the keys are baked in before you push.
 
 ## 2. Put it on GitHub Pages
 
-The repo is **github.com/r1ezzzz/lola-libeth**.
+The repo is **github.com/r1ezzzz/llibeth**.
 
 ### If the repo doesn't exist yet
 Create it on GitHub first: **New repository** → owner `r1ezzzz`, name
-`lola-libeth`, **Public**, and **do not** add a README/.gitignore/license
+`llibeth`, **Public**, and **do not** add a README/.gitignore/license
 (keep it empty), then **Create repository**.
 
 ### Push from this folder
@@ -91,7 +91,7 @@ On GitHub: repo → **Settings** → **Pages** →
 
 Wait ~1 minute. Your site is live at:
 
-**https://r1ezzzz.github.io/lola-libeth/**
+**https://r1ezzzz.github.io/llibeth/**
 
 That opens the envelope (`index.html`), which then leads into the card.
 
