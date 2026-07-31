@@ -530,12 +530,17 @@ body{
   text-align:center;font-family:Georgia,serif;font-style:italic;font-size:12.5px;
   color:var(--rose);margin:10px 0 0;min-height:16px;
 }
-.p-preview{
-  display:none;width:100%;max-height:230px;object-fit:contain;
-  margin:2px 0 4px;border-radius:9px;
-  background:#fff;border:1px solid rgba(166,124,46,.3);
+.p-preview{display:none;flex-wrap:wrap;gap:6px;margin:2px 0 4px;}
+.p-preview.show{display:flex;animation:rise .35s both;}
+.p-preview img{
+  width:52px;height:52px;object-fit:cover;border-radius:7px;
+  border:1px solid rgba(166,124,46,.3);background:#fff;
 }
-.p-preview.show{display:block;animation:rise .35s both;}
+.p-preview .more{
+  width:52px;height:52px;border-radius:7px;display:grid;place-items:center;
+  background:rgba(166,124,46,.12);border:1px solid rgba(166,124,46,.3);
+  font:400 12px Georgia,serif;color:#8a6a35;
+}
 .saved#pSavedLink a{color:var(--gold-3);}
 .saved#pSavedLink a:hover{color:var(--rose);}
 
@@ -795,10 +800,10 @@ body{
     <input id="pCaption" type="text" maxlength="120" placeholder="A caption (optional)">
 
     <label class="file-drop" for="pFile">
-      <span>Choose a photo&hellip;</span><span id="pFileName" class="fname">No file chosen</span>
+      <span>Choose photos&hellip;</span><span id="pFileName" class="fname">No file chosen</span>
     </label>
-    <input id="pFile" type="file" accept="image/*" hidden>
-    <img id="pPreview" class="p-preview" alt="">
+    <input id="pFile" type="file" accept="image/*" multiple hidden>
+    <div id="pPreview" class="p-preview"></div>
 
     <div class="row">
       <button class="btn" id="pClose">Close</button>
@@ -1297,10 +1302,29 @@ photoOv.addEventListener('click', e => { if (e.target === photoOv) openPhotos(fa
 addEventListener('keydown', e => { if (photoOpen && e.key === 'Escape') openPhotos(false); });
 
 pFile.addEventListener('change', () => {
-  const f = pFile.files[0];
-  pFileName.textContent = f ? f.name : 'No file chosen';
-  if (f){ pPreview.src = URL.createObjectURL(f); pPreview.classList.add('show'); }
-  else  { pPreview.classList.remove('show'); }
+  const files = [...pFile.files];
+  pPreview.innerHTML = '';
+  if (!files.length){
+    pFileName.textContent = 'No file chosen';
+    pPreview.classList.remove('show');
+    return;
+  }
+  pFileName.textContent = files.length === 1 ? files[0].name : files.length + ' photos selected';
+  const CAP = 8;
+  files.slice(0, CAP).forEach(f => {
+    const im = document.createElement('img');
+    const u = URL.createObjectURL(f);
+    im.src = u;
+    im.onload = () => URL.revokeObjectURL(u);   /* free memory once shown */
+    pPreview.appendChild(im);
+  });
+  if (files.length > CAP){
+    const more = document.createElement('div');
+    more.className = 'more';
+    more.textContent = '+' + (files.length - CAP);
+    pPreview.appendChild(more);
+  }
+  pPreview.classList.add('show');
 });
 
 /* shrink big photos in the browser before upload — faster + saves storage */
@@ -1321,27 +1345,43 @@ function resizeImage(file, maxDim, quality){
 }
 
 pUpload.addEventListener('click', async () => {
-  const file = pFile.files[0];
-  if (!file){ pStatus.textContent = 'Please choose a photo first.'; return; }
-  if (!/^image\//.test(file.type)){ pStatus.textContent = 'That doesn’t look like an image.'; return; }
+  const files = [...pFile.files];
+  if (!files.length){ pStatus.textContent = 'Please choose a photo first.'; return; }
   if (!REMOTE){ pStatus.textContent = 'Photo sharing isn’t set up yet.'; return; }
+  const images = files.filter(f => /^image\//.test(f.type));
+  if (!images.length){ pStatus.textContent = 'Those don’t look like images.'; return; }
 
   pUpload.disabled = true;
-  pStatus.textContent = 'Preparing photo…';
-  try {
-    const blob = await resizeImage(file, 1600, 0.85);
-    pStatus.textContent = 'Uploading…';
-    await sb.uploadPhoto(blob, pName.value.trim() || 'A loved one', pCaption.value.trim());
-    pStatus.textContent = '';
-    pSavedLink.classList.add('show');
-    pName.value = ''; pCaption.value = ''; pFile.value = '';
-    pFileName.textContent = 'No file chosen';
-    pPreview.classList.remove('show'); pPreview.removeAttribute('src');
-  } catch(err){
-    pStatus.textContent = 'Upload failed — please try again.';
-  } finally {
-    pUpload.disabled = false;
+  pSavedLink.classList.remove('show');
+  const name    = pName.value.trim() || 'A loved one';
+  const caption = pCaption.value.trim();
+  let ok = 0, fail = 0;
+
+  /* one at a time — keeps memory + network gentle, even for many photos */
+  for (let i = 0; i < images.length; i++){
+    pStatus.textContent = images.length === 1
+      ? 'Uploading…'
+      : 'Uploading ' + (i + 1) + ' of ' + images.length + '…';
+    try {
+      const blob = await resizeImage(images[i], 1600, 0.85);
+      await sb.uploadPhoto(blob, name, caption);
+      ok++;
+    } catch(e){ fail++; }
+    await new Promise(r => setTimeout(r, 60));   /* let the UI breathe */
   }
+
+  pStatus.textContent = fail
+    ? (fail + (fail === 1 ? ' photo couldn’t upload.' : ' photos couldn’t upload.'))
+    : '';
+  if (ok){
+    pSavedLink.innerHTML = 'Added ' + ok + (ok === 1 ? ' photo' : ' photos') +
+      ' with love&nbsp;&#10047;&nbsp; <a class="link-btn" href="memories.html">see all the memories &#8594;</a>';
+    pSavedLink.classList.add('show');
+  }
+  pName.value = ''; pCaption.value = ''; pFile.value = '';
+  pFileName.textContent = 'No file chosen';
+  pPreview.innerHTML = ''; pPreview.classList.remove('show');
+  pUpload.disabled = false;
 });
 
 /* deep-link: memories.html "add a photo" returns here and opens the dialog */

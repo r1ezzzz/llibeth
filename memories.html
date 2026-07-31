@@ -142,6 +142,11 @@ h1{
   font-size:clamp(16px,3.6vw,20px);color:var(--blush-deep);
 }
 
+.loading-more{
+  text-align:center;margin:16px auto 0;min-height:18px;position:relative;z-index:2;
+  font-family:Georgia,serif;font-style:italic;font-size:12.5px;color:#b09263;
+}
+
 @media(max-width:600px){
   body{padding-bottom:40px;}
   .top{padding:18px 14px 4px;}
@@ -182,6 +187,8 @@ h1{
   </main>
 
   <section class="grid" id="grid"></section>
+  <div id="sentinel" aria-hidden="true" style="height:1px"></div>
+  <p id="loadingMore" class="loading-more"></p>
 
   <div class="actions">
     <a class="btn" href="card.html">&#8592; Back to the card</a>
@@ -202,16 +209,7 @@ const REMOTE = /^https:\/\/.+\.supabase\.co/.test(CONFIG.url) && CONFIG.key.leng
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-async function loadPhotos(){
-  if (!REMOTE) return [];
-  const r = await fetch(CONFIG.url + '/rest/v1/photos?select=path,name,caption&order=created_at.desc',
-    { headers:{ apikey:CONFIG.key, Authorization:'Bearer '+CONFIG.key } });
-  const rows = await r.json();
-  return Array.isArray(rows)
-    ? rows.map(p => ({ src: CONFIG.url + '/storage/v1/object/public/' + BUCKET + '/' + p.path,
-                       name: p.name, caption: p.caption }))
-    : [];
-}
+const publicUrl = path => CONFIG.url + '/storage/v1/object/public/' + BUCKET + '/' + path;
 
 const hero    = document.getElementById('hero');
 const empty   = document.getElementById('empty');
@@ -219,9 +217,19 @@ const cap     = document.getElementById('cap');
 const counter = document.getElementById('counter');
 const count   = document.getElementById('count');
 const grid    = document.getElementById('grid');
+const loadingMore = document.getElementById('loadingMore');
 
 let photos = [];
 let idx = 0, timer = null;
+
+/* --- paged, lazy loading so a big album never loads all at once --- */
+const PAGE = 24;
+let offset = 0, total = null, loading = false, done = false;
+
+function setCount(){
+  const n = total != null ? total : photos.length;
+  count.textContent = n ? n + (n === 1 ? ' memory' : ' memories') : '';
+}
 
 function show(){
   if (!photos.length){
@@ -238,22 +246,70 @@ function show(){
   pre.src = p.src;
   cap.innerHTML = '<span class="who">' + esc(p.name || 'A loved one') + '</span>' +
                   (p.caption ? '<span class="txt">' + esc(p.caption) + '</span>' : '');
-  counter.textContent = (idx + 1) + ' / ' + photos.length;
+  counter.textContent = (idx + 1) + ' / ' + (total != null ? total : photos.length);
   [...grid.children].forEach((t, i) => t.classList.toggle('active', i === idx));
 }
-function step(d){ idx += d; show(); restart(); }
+function step(d){
+  idx += d;
+  if (!done && idx >= photos.length - 2) loadPage();   /* prefetch as you browse */
+  show(); restart();
+}
 function restart(){
   clearInterval(timer);
-  if (photos.length > 1) timer = setInterval(() => { idx++; show(); }, 5000);
+  if (photos.length > 1) timer = setInterval(() => {
+    idx++;
+    if (!done && idx >= photos.length - 2) loadPage();
+    show();
+  }, 5000);
 }
 
-function buildGrid(){
-  grid.innerHTML = photos.map((p, i) =>
-    '<div class="thumb" data-i="' + i + '"><img loading="lazy" src="' + p.src + '" alt=""></div>'
-  ).join('');
-  [...grid.children].forEach(t => {
+/* append only the newly-fetched thumbnails; images stay lazy */
+function appendThumbs(items, startIndex){
+  const frag = document.createDocumentFragment();
+  items.forEach((p, k) => {
+    const i = startIndex + k;
+    const t = document.createElement('div');
+    t.className = 'thumb'; t.dataset.i = i;
+    const im = document.createElement('img');
+    im.loading = 'lazy'; im.decoding = 'async'; im.alt = ''; im.src = p.src;
+    t.appendChild(im);
     t.addEventListener('click', () => { idx = +t.dataset.i; show(); restart(); });
+    frag.appendChild(t);
   });
+  grid.appendChild(frag);
+}
+
+async function loadPage(){
+  if (loading || done || !REMOTE) return;
+  loading = true;
+  loadingMore.textContent = 'Loading more…';
+  const from = offset, to = offset + PAGE - 1;
+  try {
+    const r = await fetch(CONFIG.url + '/rest/v1/photos?select=path,name,caption&order=created_at.desc',
+      { headers:{ apikey:CONFIG.key, Authorization:'Bearer '+CONFIG.key,
+                  Prefer:'count=exact', Range: from + '-' + to } });
+    const cr = r.headers.get('content-range') || '';
+    const mt = cr.match(/\/(\d+)\s*$/); if (mt) total = +mt[1];
+    const rows = await r.json();
+    const items = (Array.isArray(rows) ? rows : [])
+      .map(p => ({ src: publicUrl(p.path), name: p.name, caption: p.caption }));
+    const startIndex = photos.length;
+    photos = photos.concat(items);
+    appendThumbs(items, startIndex);
+    offset += items.length;
+    if (items.length < PAGE || (total != null && photos.length >= total)) done = true;
+    setCount();
+    if (startIndex === 0){
+      if (photos.length){ idx = 0; show(); restart(); }
+      else { empty.textContent = 'No photos yet — be the first to add one.'; empty.style.display = ''; }
+    }
+  } catch(e){
+    done = true;
+    if (!photos.length){ empty.textContent = 'Couldn’t load photos.'; empty.style.display = ''; }
+  } finally {
+    loading = false;
+    loadingMore.textContent = '';
+  }
 }
 
 document.getElementById('prev').addEventListener('click', () => step(-1));
@@ -263,15 +319,13 @@ addEventListener('keydown', e => {
   else if (e.key === 'ArrowRight') step(1);
 });
 
-(async () => {
-  try { photos = await loadPhotos(); } catch(e){ photos = []; }
-  count.textContent = photos.length
-    ? photos.length + (photos.length === 1 ? ' memory' : ' memories')
-    : '';
-  empty.textContent = 'No photos yet — be the first to add one.';
-  buildGrid();
-  idx = 0; show(); restart();
-})();
+/* infinite scroll: load the next page as the sentinel nears the viewport */
+const io = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) loadPage();
+}, { rootMargin: '400px' });
+io.observe(document.getElementById('sentinel'));
+
+loadPage();   /* first page */
 </script>
 </body>
 </html>
