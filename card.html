@@ -553,6 +553,33 @@ body{
 }
 .memories-btn:active{transform:translateY(0) scale(.98);}
 
+/* ---- hanging side garlands (wide screens only) ---- */
+.side-decor{position:fixed;top:0;bottom:0;width:174px;z-index:1;pointer-events:none;}
+.side-decor.left{left:0;}
+.side-decor.right{right:0;transform:scaleX(-1);}
+.side-decor .vline{
+  position:absolute;top:7%;bottom:7%;left:90px;width:2px;border-radius:2px;
+  background:linear-gradient(transparent,rgba(166,124,46,.42) 12%,rgba(166,124,46,.42) 88%,transparent);
+  opacity:.55;
+}
+.side-decor .vline::before,.side-decor .vline::after{
+  content:"";position:absolute;left:50%;width:6px;height:6px;margin-left:-3px;
+  transform:rotate(45deg);background:var(--gold-2);opacity:.8;
+}
+.side-decor .vline::before{top:-3px;}
+.side-decor .vline::after{bottom:-3px;}
+.side-decor .bouquet{position:absolute;width:154px;filter:drop-shadow(0 5px 12px rgba(160,110,110,.16));}
+.side-decor .b1{top:-14px;left:4px;transform:rotate(9deg);}
+.side-decor .b2{top:39%;left:-2px;transform:rotate(-10deg) scale(.9);}
+.side-decor .b3{bottom:-18px;left:6px;transform:rotate(4deg) scale(1.06);}
+.side-decor .bfly{position:absolute;width:38px;left:64px;top:22%;animation:flutterby 7s ease-in-out infinite;}
+.side-decor .bfly.two{top:66%;left:52px;width:30px;animation-duration:9s;animation-delay:1.4s;}
+@keyframes flutterby{
+  0%,100%{transform:translateY(0) rotate(-5deg);}
+  50%    {transform:translateY(-24px) rotate(7deg);}
+}
+@media (max-width:1240px){.side-decor{display:none;}}
+
 @media (prefers-reduced-motion:reduce){*{animation:none !important;}}
 </style>
 </head>
@@ -693,6 +720,26 @@ body{
 
     <span class="tip"></span>
   </div>
+</div>
+
+<!-- ============================================================
+     SIDE GARLANDS
+     ============================================================ -->
+<div class="side-decor left" aria-hidden="true">
+  <span class="vline"></span>
+  <svg class="bouquet b1" viewBox="0 0 300 300"><use href="#cluster-a"/></svg>
+  <svg class="bouquet b2" viewBox="0 0 300 300"><use href="#cluster-b"/></svg>
+  <svg class="bouquet b3" viewBox="0 0 300 300"><use href="#cluster-a"/></svg>
+  <svg class="bfly" viewBox="0 0 40 36"><use href="#bfly"/></svg>
+  <svg class="bfly two" viewBox="0 0 40 36"><use href="#bfly"/></svg>
+</div>
+<div class="side-decor right" aria-hidden="true">
+  <span class="vline"></span>
+  <svg class="bouquet b1" viewBox="0 0 300 300"><use href="#cluster-b"/></svg>
+  <svg class="bouquet b2" viewBox="0 0 300 300"><use href="#cluster-a"/></svg>
+  <svg class="bouquet b3" viewBox="0 0 300 300"><use href="#cluster-b"/></svg>
+  <svg class="bfly" viewBox="0 0 40 36"><use href="#bfly"/></svg>
+  <svg class="bfly two" viewBox="0 0 40 36"><use href="#bfly"/></svg>
 </div>
 
 <!-- ============================================================
@@ -855,6 +902,19 @@ body{
 
     <g id="star">
       <path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" fill="#fff6d8"/>
+    </g>
+
+    <g id="bfly">
+      <g fill="url(#petalPink)" stroke="#d98aa4" stroke-width=".6" stroke-opacity=".55">
+        <path d="M19 18 C 9 5 1 8 5 16 C 1 21 7 24 13 21 C 17 19 19 19 19 18 Z"/>
+        <path d="M19 19 C 12 25 7 31 13 33 C 18 34 19 27 19 20 Z"/>
+        <path d="M21 18 C 31 5 39 8 35 16 C 39 21 33 24 27 21 C 23 19 21 19 21 18 Z"/>
+        <path d="M21 19 C 28 25 33 31 27 33 C 22 34 21 27 21 20 Z"/>
+      </g>
+      <ellipse cx="20" cy="19" rx="1.5" ry="9.5" fill="#8a5a2f"/>
+      <circle cx="20" cy="9.5" r="1.7" fill="#8a5a2f"/>
+      <path d="M20 9 C 18 4 15 3 13.5 4 M20 9 C 22 4 25 3 26.5 4" fill="none" stroke="#8a5a2f" stroke-width=".9" stroke-linecap="round"/>
+      <g fill="#fff6d8" opacity=".9"><circle cx="10" cy="14" r="1.4"/><circle cx="30" cy="14" r="1.4"/><circle cx="12" cy="27" r="1.1"/><circle cx="28" cy="27" r="1.1"/></g>
     </g>
   </defs>
 </svg>
