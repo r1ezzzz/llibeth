@@ -438,6 +438,28 @@ body{
   font-size:12.5px;color:#b09263;padding:14px 0 2px;
 }
 
+/* saved confirmation + inline link */
+.saved{
+  text-align:center;font-family:Georgia,serif;font-style:italic;font-size:13px;
+  color:var(--rose);margin:14px 0 0;opacity:0;transform:translateY(4px);
+  transition:opacity .35s,transform .35s;
+}
+.saved.show{opacity:1;transform:none;}
+.link-btn{
+  border:0;background:none;padding:0;cursor:pointer;
+  font-family:Georgia,serif;font-style:italic;font-size:13px;
+  color:var(--gold-3);text-decoration:underline;text-underline-offset:2px;
+}
+.link-btn:hover{color:var(--rose);}
+
+/* wishes gallery — the saved-letters archive */
+.wish.gallery h2{margin-bottom:2px;}
+.wish.gallery .list{
+  max-height:58vh;overflow:auto;margin-top:14px;padding-right:6px;
+}
+.wish.gallery .list .entry:first-child{border-top:0;padding-top:4px;}
+.wish.gallery .row{margin-top:18px;}
+
 @media (prefers-reduced-motion:reduce){*{animation:none !important;}}
 </style>
 </head>
@@ -544,6 +566,17 @@ body{
       <em>Leave a wish</em>
     </button>
 
+    <span class="link"></span>
+
+    <button class="med" id="btnLetters" aria-label="Read all the wishes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 6.4C10.5 5 8 4.5 4 4.8V18c4-.3 6.5.2 8 1.7"/>
+        <path d="M12 6.4C13.5 5 16 4.5 20 4.8V18c-4-.3-6.5.2-8 1.7"/>
+        <path d="M12 6.4V19.7"/>
+      </svg>
+      <em>All wishes</em>
+    </button>
+
     <span class="tip"></span>
   </div>
 </div>
@@ -564,7 +597,22 @@ body{
       <button class="btn primary" id="wSave">Add wish</button>
     </div>
 
-    <div class="list" id="wList"></div>
+    <p class="saved" id="wSaved">Saved with love&nbsp;&#10047;&nbsp; <button type="button" class="link-btn" id="wViewAll">see all wishes</button></p>
+  </div>
+</div>
+
+<!-- ============================================================
+     WISHES GALLERY — every saved letter
+     ============================================================ -->
+<div class="overlay" id="galleryOverlay" role="dialog" aria-modal="true" aria-label="All wishes for Lola">
+  <div class="wish gallery">
+    <h2>Wishes for Lola</h2>
+    <p class="sub" id="gCount">&nbsp;</p>
+    <div class="list" id="gList"></div>
+    <div class="row">
+      <button class="btn" id="gClose">Close</button>
+      <button class="btn primary" id="gWrite">Leave a wish</button>
+    </div>
   </div>
 </div>
 
@@ -929,36 +977,38 @@ btnLove.addEventListener('click', async () => {
   }
 });
 
-/* ---------- leave a wish ---------- */
+/* ---------- wishes: compose + saved-letters gallery ---------- */
 const overlay = document.getElementById('overlay');
-const wName = document.getElementById('wName');
-const wMsg  = document.getElementById('wMsg');
-const wList = document.getElementById('wList');
+const wName   = document.getElementById('wName');
+const wMsg    = document.getElementById('wMsg');
+const wSaved  = document.getElementById('wSaved');
+const galOv   = document.getElementById('galleryOverlay');
+const gList   = document.getElementById('gList');
+const gCount  = document.getElementById('gCount');
 let wishes = REMOTE ? [] : store.get('lola-wishes', []);
 
 const esc = s => String(s).replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function renderWishes(){
-  wList.innerHTML = wishes.length
+  gCount.textContent = wishes.length
+    ? wishes.length + (wishes.length === 1 ? ' wish' : ' wishes') + ' so far'
+    : '';
+  gList.innerHTML = wishes.length
     ? wishes.map(w => '<div class="entry"><div class="who">' + esc(w.n) +
                       '</div><div class="msg">' + esc(w.m) + '</div></div>').join('')
-    : '<div class="empty">No wishes yet &mdash; be the first.</div>';
+    : '<div class="empty">No wishes yet &mdash; be the first to write one.</div>';
 }
 renderWishes();
 
-async function openWish(open){
+/* --- compose --- */
+function openWish(open){
   overlay.classList.toggle('open', open);
-  if (open){
-    setTimeout(() => wMsg.focus(), 320);
-    if (REMOTE){ try { wishes = await sb.wishes(); renderWishes(); } catch(e){} }
-  }
+  if (open){ wSaved.classList.remove('show'); setTimeout(() => wMsg.focus(), 320); }
 }
-
 document.getElementById('btnWish').addEventListener('click', () => openWish(true));
 document.getElementById('wClose').addEventListener('click', () => openWish(false));
 overlay.addEventListener('click', e => { if (e.target === overlay) openWish(false); });
-addEventListener('keydown', e => { if (e.key === 'Escape') openWish(false); });
 
 document.getElementById('wSave').addEventListener('click', async () => {
   const m = wMsg.value.trim();
@@ -967,6 +1017,7 @@ document.getElementById('wSave').addEventListener('click', async () => {
   wishes.unshift({ n, m });                      /* optimistic */
   renderWishes();
   wMsg.value = '';
+  wSaved.classList.add('show');
   const r = overlay.getBoundingClientRect();
   for (let i = 0; i < 6; i++) spawnHeart(r.width/2, r.height*0.4, i);
 
@@ -976,6 +1027,19 @@ document.getElementById('wSave').addEventListener('click', async () => {
     store.set('lola-wishes', wishes);
   }
 });
+
+/* --- gallery (all saved letters) --- */
+async function openGallery(open){
+  galOv.classList.toggle('open', open);
+  if (open && REMOTE){ try { wishes = await sb.wishes(); renderWishes(); } catch(e){} }
+}
+document.getElementById('btnLetters').addEventListener('click', () => openGallery(true));
+document.getElementById('gClose').addEventListener('click', () => openGallery(false));
+galOv.addEventListener('click', e => { if (e.target === galOv) openGallery(false); });
+document.getElementById('gWrite').addEventListener('click', () => { openGallery(false); openWish(true); });
+document.getElementById('wViewAll').addEventListener('click', () => { openWish(false); openGallery(true); });
+
+addEventListener('keydown', e => { if (e.key === 'Escape'){ openWish(false); openGallery(false); } });
 
 /* ---------- initial shared load + gentle live refresh ---------- */
 if (REMOTE){
