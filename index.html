@@ -49,6 +49,13 @@ body::after{background:radial-gradient(120% 90% at 50% 45%,transparent 52%,rgba(
 @media(max-width:620px){
   .f-tl{width:190px}.f-tr{width:170px}.f-bl{width:180px}.f-br{width:175px}
 }
+@media(max-width:420px){
+  .stage{padding:14px;}
+  .eyebrow{letter-spacing:.32em;margin-bottom:10px;}
+  .title{font-size:clamp(25px,7.6vw,40px);margin-bottom:26px;}
+  .env{width:min(320px,86vw);}
+  .prompt{margin-top:30px;}
+}
 
 /* ---------- petals ---------- */
 .petal{position:fixed;top:-8%;z-index:2;pointer-events:none;animation:fall linear infinite;will-change:transform;}
