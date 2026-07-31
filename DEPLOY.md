@@ -63,6 +63,37 @@ the keys are baked in before you push.
    Save the file. That's it — the page is now shared for everyone.
    (Leave them as `PASTE_...` and the page still works, but saves stay on one device.)
 
+### Photo wall (the "Photos" button)
+
+To let people upload pictures with Lola and see them in the slideshow, run this
+**once** in the SQL editor (creates a `photos` table + a public storage bucket):
+
+```sql
+create table if not exists public.photos (
+  id         uuid primary key default gen_random_uuid(),
+  path       text not null,
+  name       text not null default 'A loved one',
+  caption    text,
+  created_at timestamptz not null default now()
+);
+alter table public.photos enable row level security;
+create policy "read photos" on public.photos for select using (true);
+create policy "add photos"  on public.photos for insert with check (true);
+
+insert into storage.buckets (id, name, public)
+values ('lola-photos', 'lola-photos', true)
+on conflict (id) do nothing;
+
+create policy "read lola-photos" on storage.objects
+  for select using (bucket_id = 'lola-photos');
+create policy "upload lola-photos" on storage.objects
+  for insert with check (bucket_id = 'lola-photos');
+```
+
+Uploaded photos are shrunk in the browser (max 1600px, JPEG) before upload, so
+they stay small. Anyone with the link can add a photo — if something unwanted
+shows up, delete it in Supabase → **Storage → lola-photos** and **Table Editor → photos**.
+
 ---
 
 ## 2. Put it on GitHub Pages
